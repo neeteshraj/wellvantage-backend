@@ -6,6 +6,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
 import { HealthModule } from './modules/health/health.module';
 
@@ -31,6 +32,7 @@ import { HealthModule } from './modules/health/health.module';
       envFilePath: '.env',
     }),
     DatabaseModule,
+    AuthModule,
     CalendarModule,
     HealthModule,
   ],
