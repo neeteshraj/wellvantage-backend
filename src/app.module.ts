@@ -7,6 +7,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
+import { HealthModule } from './modules/health/health.module';
 
 /**
  * Root module of the NestJS application.
@@ -31,6 +32,7 @@ import { CalendarModule } from './modules/calendar/calendar.module';
     }),
     DatabaseModule,
     CalendarModule,
+    HealthModule,
   ],
   controllers: [],
   providers: [],
