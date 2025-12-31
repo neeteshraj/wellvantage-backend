@@ -5,6 +5,7 @@
 
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from '../auth/auth.module';
 import { AVAILABILITY_REPOSITORY } from './application/ports/availability.repository';
 import { BOOKING_REPOSITORY } from './application/ports/booking.repository';
 import { CreateBookingUseCase } from './application/usecases/create-booking.usecase';
@@ -44,7 +45,7 @@ import { CalendarController } from './presentation/calendar.controller';
  * ```
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([AvailabilityBlockOrmEntity, BookingOrmEntity])],
+  imports: [TypeOrmModule.forFeature([AvailabilityBlockOrmEntity, BookingOrmEntity]), AuthModule],
   controllers: [CalendarController],
   providers: [
     SetAvailabilityUseCase,

@@ -3,24 +3,46 @@
  * @module calendar/presentation/calendar-controller
  */
 
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Post, Query } from '@nestjs/common';
-import { BookingCollisionError } from '../domain/errors/booking-collision.error';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { Request } from 'express';
+import { JwtAuthGuard } from '../../auth/presentation/guards/jwt-auth.guard';
 import { CreateBookingUseCase } from '../application/usecases/create-booking.usecase';
 import { ListAvailabilityUseCase } from '../application/usecases/list-availability.usecase';
 import { ListBookingsUseCase } from '../application/usecases/list-bookings.usecase';
 import { SetAvailabilityUseCase } from '../application/usecases/set-availability.usecase';
-import { CreateAvailabilityDto } from './dto/create-availability.dto';
+import { BookingCollisionError } from '../domain/errors/booking-collision.error';
+import { CreateAvailabilityDto, CreateBatchAvailabilityDto } from './dto/create-availability.dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { QueryAvailabilityDto, QueryBookingsDto } from './dto/query-availability.dto';
+
+interface AuthenticatedRequest extends Request {
+  user: {
+    id: string;
+    email: string;
+  };
+}
 
 /**
  * REST controller handling calendar-related HTTP requests.
  * Delegates business logic to application layer use cases.
  * Maps domain errors to appropriate HTTP responses.
+ * All routes are protected by JWT authentication.
  *
  * @route /calendar
  */
 @Controller('calendar')
+@UseGuards(JwtAuthGuard)
 export class CalendarController {
   /**
    * Creates a new CalendarController instance.
@@ -39,15 +61,16 @@ export class CalendarController {
 
   /**
    * Creates an availability block for a trainer.
+   * TrainerId is extracted from the authenticated user's JWT token.
    *
    * @route POST /calendar/availability
+   * @param req - The authenticated request containing user info
    * @param dto - The availability block creation data
    * @returns Success response with created availability block
    *
    * @example
    * POST /calendar/availability
    * {
-   *   "trainerId": "trainer_123",
    *   "date": "2024-01-15",
    *   "startTime": "09:00",
    *   "endTime": "17:00"
@@ -55,9 +78,9 @@ export class CalendarController {
    */
   @Post('availability')
   @HttpCode(HttpStatus.CREATED)
-  async createAvailability(@Body() dto: CreateAvailabilityDto) {
+  async createAvailability(@Req() req: AuthenticatedRequest, @Body() dto: CreateAvailabilityDto) {
     const result = await this.setAvailabilityUseCase.execute({
-      trainerId: dto.trainerId,
+      trainerId: req.user.id,
       date: dto.date,
       startTime: dto.startTime,
       endTime: dto.endTime,
@@ -66,6 +89,47 @@ export class CalendarController {
     return {
       success: true,
       data: result,
+    };
+  }
+
+  /**
+   * Creates multiple availability blocks for a trainer in a single request.
+   * TrainerId is extracted from the authenticated user's JWT token.
+   *
+   * @route POST /calendar/availability/batch
+   * @param req - The authenticated request containing user info
+   * @param dto - The batch availability creation data with multiple dates
+   * @returns Success response with created availability blocks
+   *
+   * @example
+   * POST /calendar/availability/batch
+   * {
+   *   "dates": ["2024-01-15", "2024-01-16", "2024-01-17"],
+   *   "startTime": "09:00",
+   *   "endTime": "17:00",
+   *   "sessionName": "PT"
+   * }
+   */
+  @Post('availability/batch')
+  @HttpCode(HttpStatus.CREATED)
+  async createBatchAvailability(@Req() req: AuthenticatedRequest, @Body() dto: CreateBatchAvailabilityDto) {
+    const results = await Promise.all(
+      dto.dates.map((date) =>
+        this.setAvailabilityUseCase.execute({
+          trainerId: req.user.id,
+          date,
+          startTime: dto.startTime,
+          endTime: dto.endTime,
+        }),
+      ),
+    );
+
+    return {
+      success: true,
+      data: {
+        availabilityBlocks: results,
+        sessionName: dto.sessionName,
+      },
     };
   }
 
