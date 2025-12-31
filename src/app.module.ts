@@ -9,6 +9,7 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
 import { HealthModule } from './modules/health/health.module';
+import { WorkoutModule } from './modules/workout/workout.module';
 
 /**
  * Root module of the NestJS application.
@@ -35,6 +36,7 @@ import { HealthModule } from './modules/health/health.module';
     AuthModule,
     CalendarModule,
     HealthModule,
+    WorkoutModule,
   ],
   controllers: [],
   providers: [],
