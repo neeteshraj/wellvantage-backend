@@ -42,12 +42,9 @@ export class DayDto {
 
 /**
  * DTO for creating a workout plan.
+ * Note: trainerId is extracted from the authenticated user, not from the request body.
  */
 export class CreateWorkoutPlanDto {
-  @IsString()
-  @IsNotEmpty()
-  trainerId!: string;
-
   @IsString()
   @IsNotEmpty()
   name!: string;

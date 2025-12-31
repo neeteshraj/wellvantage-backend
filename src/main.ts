@@ -50,6 +50,7 @@ async function bootstrap() {
 
   logger.log(`Application is running on: http://localhost:${port}`);
   logger.log(`Calendar API available at: http://localhost:${port}/calendar`);
+  logger.log(`Workout API available at: http://localhost:${port}/workout`);
 }
 
 void bootstrap();

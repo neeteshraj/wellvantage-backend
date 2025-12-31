@@ -5,6 +5,7 @@
 
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from '../auth/auth.module';
 import { WORKOUT_PLAN_REPOSITORY } from './application/ports/workout-plan.repository';
 import { CreateWorkoutPlanUseCase } from './application/usecases/create-workout-plan.usecase';
 import { DeleteWorkoutPlanUseCase } from './application/usecases/delete-workout-plan.usecase';
@@ -19,7 +20,7 @@ import { WorkoutController } from './presentation/workout.controller';
  * NestJS module that wires together all workout feature components.
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([WorkoutPlanOrmEntity, WorkoutDayOrmEntity, ExerciseOrmEntity])],
+  imports: [TypeOrmModule.forFeature([WorkoutPlanOrmEntity, WorkoutDayOrmEntity, ExerciseOrmEntity]), AuthModule],
   controllers: [WorkoutController],
   providers: [
     CreateWorkoutPlanUseCase,
