@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
+import { ClientModule } from './modules/client/client.module';
 import { HealthModule } from './modules/health/health.module';
 import { WorkoutModule } from './modules/workout/workout.module';
 
@@ -35,6 +36,7 @@ import { WorkoutModule } from './modules/workout/workout.module';
     DatabaseModule,
     AuthModule,
     CalendarModule,
+    ClientModule,
     HealthModule,
     WorkoutModule,
   ],
