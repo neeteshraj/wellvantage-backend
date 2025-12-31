@@ -16,22 +16,28 @@ export interface RefreshTokenInput {
 
 /**
  * Output DTO for the RefreshToken use case.
+ * Implements refresh token rotation - returns both new access and refresh tokens.
  */
 export interface RefreshTokenOutput {
   /** New JWT access token */
   accessToken: string;
+  /** New JWT refresh token (rotation) */
+  refreshToken: string;
 }
 
 /**
  * Use case for refreshing expired access tokens.
- * Validates the refresh token and generates a new access token.
+ * Implements refresh token rotation for enhanced security:
+ * - Validates the old refresh token
+ * - Generates a new access token
+ * - Generates a new refresh token (invalidating the old one)
  *
  * @example
  * ```typescript
  * const result = await refreshTokenUseCase.execute({
- *   refreshToken: 'refresh-token-from-client',
+ *   refreshToken: 'old-refresh-token',
  * });
- * // Returns: { accessToken: 'new-access-token' }
+ * // Returns: { accessToken: 'new-access-token', refreshToken: 'new-refresh-token' }
  * ```
  */
 @Injectable()
@@ -44,16 +50,19 @@ export class RefreshTokenUseCase {
   constructor(private readonly jwtService: JwtAuthService) {}
 
   /**
-   * Executes the token refresh flow.
+   * Executes the token refresh flow with rotation.
    *
    * @param input - Contains the refresh token
-   * @returns New access token
+   * @returns New access token and new refresh token
    * @throws {UnauthorizedException} If refresh token is invalid or expired
    */
   async execute(input: RefreshTokenInput): Promise<RefreshTokenOutput> {
     try {
-      const accessToken = await this.jwtService.refreshAccessToken(input.refreshToken);
-      return { accessToken };
+      const tokens = await this.jwtService.refreshTokens(input.refreshToken);
+      return {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      };
     } catch {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }

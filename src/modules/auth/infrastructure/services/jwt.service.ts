@@ -117,13 +117,15 @@ export class JwtAuthService {
   }
 
   /**
-   * Generates a new access token using a refresh token.
+   * Generates new token pair (access + refresh) using a refresh token.
+   * Implements refresh token rotation for enhanced security.
+   * The old refresh token is implicitly invalidated by issuing a new one.
    *
    * @param refreshToken - The refresh token
-   * @returns New access token
+   * @returns New token pair (access token + new refresh token)
    * @throws If refresh token is invalid or expired
    */
-  async refreshAccessToken(refreshToken: string): Promise<string> {
+  async refreshTokens(refreshToken: string): Promise<TokenPair> {
     const payload = await this.jwtService.verifyAsync<JwtPayload>(refreshToken);
 
     if (payload.type !== 'refresh') {
@@ -136,9 +138,22 @@ export class JwtAuthService {
       type: 'access' as const,
     };
 
-    return this.jwtService.signAsync(accessPayload, {
-      expiresIn: this.accessExpirySeconds,
-    });
+    const newRefreshPayload = {
+      sub: payload.sub,
+      email: payload.email,
+      type: 'refresh' as const,
+    };
+
+    const [accessToken, newRefreshToken] = await Promise.all([
+      this.jwtService.signAsync(accessPayload, {
+        expiresIn: this.accessExpirySeconds,
+      }),
+      this.jwtService.signAsync(newRefreshPayload, {
+        expiresIn: this.refreshExpirySeconds,
+      }),
+    ]);
+
+    return { accessToken, refreshToken: newRefreshToken };
   }
 
   /**
